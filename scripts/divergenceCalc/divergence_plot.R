@@ -165,6 +165,7 @@ divergence_eg_tes_rounded_for_superfamily_plot <- split(divergence_eg_tes_rounde
 
 # Create plots of superfamilies of DNA transposons, LINEs, LTR retrotransposons and SINEs
 
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$DNA) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$DNA) > 0) {
 kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$DNA,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -173,9 +174,11 @@ kimura_superfamily_plot_1 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) +
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3))
-if (inherits(try(ggplot_build(kimura_superfamily_plot_1)), "try-error")) 
+} else {
   kimura_superfamily_plot_1 <- NULL
+}
 
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$LINE) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$LINE) > 0) {
 kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -185,9 +188,11 @@ kimura_superfamily_plot_2 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Blues", direction = -1)
-if (inherits(try(ggplot_build(kimura_superfamily_plot_2)), "try-error")) 
+} else {
   kimura_superfamily_plot_2 <- NULL
-                     
+}
+
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$LTR) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$LTR) > 0) {
 kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$LTR,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -197,9 +202,11 @@ kimura_superfamily_plot_3 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Greens", direction = -1)
-if (inherits(try(ggplot_build(kimura_superfamily_plot_3)), "try-error")) 
+} else {
   kimura_superfamily_plot_3 <- NULL
+}
 
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$SINE) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$SINE) > 0) {
 kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$SINE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -209,9 +216,11 @@ kimura_superfamily_plot_4 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "YlOrRd", direction = -1)
-if (inherits(try(ggplot_build(kimura_superfamily_plot_4)), "try-error")) 
+} else {
   kimura_superfamily_plot_4 <- NULL
+}
 
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$PLE) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$PLE) > 0) {
 kimura_superfamily_plot_5 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$PLE,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -221,9 +230,11 @@ kimura_superfamily_plot_5 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Purples", direction = -1)
-if (inherits(try(ggplot_build(kimura_superfamily_plot_5)), "try-error")) 
+} else {
   kimura_superfamily_plot_5 <- NULL
+}
 
+if (!is.null(divergence_eg_tes_rounded_for_superfamily_plot$RC) && nrow(divergence_eg_tes_rounded_for_superfamily_plot$RC) > 0) {
 kimura_superfamily_plot_6 <- ggplot(divergence_eg_tes_rounded_for_superfamily_plot$RC,
                                     aes(x = KIMURA80, y = KIMURA_SUM, fill = superfamily)) +
   geom_col(position = "stack", width = 0.01, colour = "black", linewidth = 0.2) +
@@ -233,8 +244,9 @@ kimura_superfamily_plot_6 <- ggplot(divergence_eg_tes_rounded_for_superfamily_pl
   facet_grid(subclass~., scales = "free") +
   guides(fill=guide_legend(ncol=3)) +
   scale_fill_brewer(palette = "Oranges", direction = -1)
-if (inherits(try(ggplot_build(kimura_superfamily_plot_6)), "try-error")) 
+} else {
   kimura_superfamily_plot_6 <- NULL
+}
 
 # flip axis if desired
 # Flip axis if desired
