@@ -68,7 +68,7 @@ prepGenome()
 		sed '/>/ s/[[:space:]].*//g; /^$/d' ${genome} > ${genome}.tmp
 		${SCRIPT_DIR}/headSwap.sh -i ${genome}.tmp -o ${genome}.prep && rm ${genome}.tmp
 		mv ${genome}.tmp.dict ${genome}.dict
-		sed -i '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
+		sed -i.bak '/^>/! s/[DVHBPE]/N/g' ${genome}.prep
 		dict=${genome}.dict
 		genOrig=${genome}
 		genome=${genome}.prep
@@ -481,7 +481,7 @@ dfamCheck()
     		-crossmatch_dir $(which RepeatMasker | sed 's|/bin/RepeatMasker|/bin|g') \
     		-default_search_engine rmblast" | tee -a $(pwd)/configure_dfam39.sh
     		echo "" | tee -a $(pwd)/configure_dfam39.sh
-    		sed -i '/^perl/  s/\s\s*/ /g' $(pwd)/configure_dfam39.sh
+    		sed -i.bak '/^perl/  s/\s\s*/ /g' $(pwd)/configure_dfam39.sh
     		echo "########################################################"
     		echo ""
     		echo "Following these steps should enable you to use Dfam 3.9 with RepeatMasker and Earl Grey"
@@ -522,7 +522,7 @@ SECONDS=0
 # Step 1 - set up the directories and make sure all modules are present
 
 stage="Checking Parameters" && runningTea
-SCRIPT_DIR=/data/toby/EarlGrey/scripts/
+SCRIPT_DIR=/usr/local/share/earlgrey-7.2.1-0/scripts/
 dfamCheck
 Checks
 stage="Making Directories" && runningTea
