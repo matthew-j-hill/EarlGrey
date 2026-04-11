@@ -186,6 +186,10 @@ def outer_func(genome_path, temp_dir, timeoutSeconds, chunk_path):
             tmp_holder = "\t".join(str(x) for x in tmp_holder)+"\t"+Kdist+"\n"
             tmp_out.write(tmp_holder)
 
+    # Signal that this chunk completed successfully.
+    with open(holder_file_name + ".ok", 'w') as f:
+        pass
+
     return(holder_file_name)
 
 def tmp_out_parser(file_list, simple_gff, other_gff):
@@ -238,30 +242,49 @@ if __name__ == "__main__":
     # create as many processes as instructed cores
     num_processes = args.cores
 
+    # see if we have finished tmp files so we can skip re-running calculations
+    existing_tmps = [f for f in os.listdir(args.temp_dir)
+                     if f.endswith('.tmp')
+                     and not f.startswith(('failed_', 'chunk_'))
+                     and os.path.exists(os.path.join(args.temp_dir, f + '.ok'))]
+
+    if len(existing_tmps) >= num_processes:
+        print(f"Found {len(existing_tmps)} existing .tmp files, skipping calculations")
+        results = [os.path.join(args.temp_dir, f) for f in existing_tmps]
+    else:
         chunks = [in_gff.iloc[idx] for idx in np.array_split(range(len(in_gff)), num_processes)]
+    
+        # Write chunks to temp TSV files so the parent DataFrame can be freed before workers
+        # are created. Workers read from disk rather than receiving pickled DataFrames via IPC.
+        print("Writing chunks to disk")
+        chunk_files = []
+        for i, chunk in enumerate(chunks):
+            chunk_path = os.path.join(args.temp_dir, f"chunk_{i}.tsv")
+            chunk.to_csv(chunk_path, sep="\t", index=True)
+            chunk_files.append(chunk_path)
 
-    # Free the main GFF DataFrame and chunk list from the parent process before the pool
-    # is created. With forkserver this is already avoided, but freeing here also reduces
-    # parent RSS during the pool run, which matters on memory-constrained machines.
-    del chunks
-    del in_gff
+        # Free the main GFF DataFrame and chunk list from the parent process before the pool
+        # is created. With forkserver this is already avoided, but freeing here also reduces
+        # parent RSS during the pool run, which matters on memory-constrained machines.
+        del chunks
+        del in_gff
 
-    # set pybedtools temp path (also set per-worker inside outer_func for forkserver)
-    try:
+        # set pybedtools temp path (also set per-worker inside outer_func for forkserver)
+        try:
             os.mkdir(os.path.join(args.temp_dir, "pybedtools"))
-    except FileExistsError:
-        pass
+        except FileExistsError:
+            pass
         pybedtools.set_tempdir(os.path.join(args.temp_dir, 'pybedtools'))
-
-    print("Starting calculations") 
-    # Perform calculations in parallel. maxtasksperchild=1 restarts each worker after
-    # processing one chunk, releasing any lingering pybedtools handles or cached objects.
-    func = partial(outer_func, args.genome, args.temp_dir, args.timeout)
-    pool = multiprocessing.Pool(processes=num_processes, maxtasksperchild=1)
-    results = list(pool.imap_unordered(func, chunk_files))
-    pool.close()
-    pool.join()
-    print("Finished calculations") 
+        
+        print("Starting calculations") 
+        # Perform calculations in parallel. maxtasksperchild=1 restarts each worker after
+        # processing one chunk, releasing any lingering pybedtools handles or cached objects.
+        func = partial(outer_func, args.genome, args.temp_dir, args.timeout)
+        pool = multiprocessing.Pool(processes=num_processes, maxtasksperchild=1)
+        results = list(pool.imap_unordered(func, chunk_files))
+        pool.close()
+        pool.join()
+        print("Finished calculations") 
 
     # Read in temp files, fix metadata, add simple repeats back, and sort
     calc_gff = tmp_out_parser(results, simple_gff, other_gff)
