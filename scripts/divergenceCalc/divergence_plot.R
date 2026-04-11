@@ -130,7 +130,7 @@ if(opt$axis_flip == TRUE){
 }
 ggsave(plot = subclass_kimura_plot, filename = paste0(out_directory, "/", species_name, "_classification_landscape.pdf"), device = "pdf", width = 12.85, height = 8.5)
 
-split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_grid(subclass~., scales = "free")
+split_subclass_kimura_plot <- kimura_plot + scale_y_continuous(name = "Base pairs", labels = function(x) format(x, scientific = TRUE)) + facet_wrap(subclass~., scales = "free")
 # Flip axis if desired
 if(opt$axis_flip == TRUE){
   split_subclass_kimura_plot <- split_subclass_kimura_plot +
