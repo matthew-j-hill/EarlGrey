@@ -61,10 +61,7 @@ def parse_gff(in_gff):
     gff = gff[~gff['repeat_class'].str.contains('Simple_repeat|Satellite|Low_complexity')].reset_index()
     other_gff = gff[~gff['tool'].str.contains('Earl_Grey|RepeatMasker')].reset_index()
     gff = gff[gff['tool'].str.contains('Earl_Grey|RepeatMasker')].reset_index()
-    gff['metadata_tmp'] = gff['metadata'].str.replace(';TSTART.*', '', regex=True)
-    gff[['repeat_id', 'repeat_family']] = gff['metadata_tmp'].str.split(';', n=2, expand=True)
-    gff = gff.drop(columns = ['metadata_tmp', 'repeat_id'])
-    gff['repeat_family'] = gff['repeat_family'].str.replace('NAME=', '', regex=True)
+    gff['repeat_family'] = gff['metadata'].str.extract(r'[Nn]ame=([^;]+)', expand=False)
     gff['repeat_family'] = gff['repeat_family'].str.lower()
     return(gff, simple_gff, other_gff)
 
