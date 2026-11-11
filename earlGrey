@@ -22,6 +22,7 @@ usage()
 		-n == Max number of sequences used to generate consensus sequences (Default: 20)
 		-a == minimum number of sequences required to build a consensus sequence (Default: 3)
 		-e == Run HELIANO as an optional step to detect Helitrons (yes/no, Default: no)
+		-b == HELIANO minimum blastn bitscore for terminal-signal homology search, integer 30-55 (Default: HELIANO default, 32; consider raising for large genomes)
 		-q == Suppress TEstrainer parallel progress bar (yes/no, Default: no, useful for batch/sbatch jobs)
 		-v == Validate resume by genome checksum: rerun a stage if the input genome changed since it last completed (yes/no, Default: no)
 		-w == Temporary directory for RepeatModeler, TEstrainer and divergence working files, e.g. /tmp (Default: use output directory)
@@ -304,7 +305,7 @@ novoMask()
 heliano_optional()
 {
 	cd ${OUTDIR}/${species}_heliano/
-	heliano -g $genome --nearest -dn 6000 -flank_sim 0.5 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 10000 -n $ProcNum
+	heliano -g $genome --nearest -dn 6000 -flank_sim 0.5 -o ${OUTDIR}/${species}_heliano/HEL_${timestamp} -w 10000 -n $ProcNum ${heliScore:+--score $heliScore} || { echo "ERROR: HELIANO failed, stopping"; exit 2; }
 	awk '{OFS="\t"}{print $1, "HELIANO", "RC/Helitron", $2+1, $3, $5, $6, ".", "ID="$9"_"$11";shortTE=F"}' ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.bed > ${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
 	helitron_gff=${OUTDIR}/${species}_heliano/HEL_${timestamp}/RC.representative.gff
 }
@@ -547,6 +548,14 @@ Checks()
 		heli=no; echo "HELITRON detection not specified using (yes/no). Using default parameter (no)."
 	fi
 
+	if [ -z "$heliScore" ]; then
+		[ "$heli" == "yes" ] && echo "HELIANO blastn bitscore cutoff: HELIANO default (32)"
+	elif [[ "$heliScore" =~ ^[0-9]+$ ]] && [ "$heliScore" -ge 30 ] && [ "$heliScore" -le 55 ]; then
+		echo "HELIANO blastn bitscore cutoff: $heliScore"
+	else
+		echo "HELIANO bitscore must be an integer from 30 to 55; using HELIANO default (32)"; heliScore=""
+	fi
+
 	if [ "$quietBar" == "yes" ] ; then
 		quietBar=yes; echo "TEstrainer parallel progress bar will be suppressed"
 	elif [ -z "$quietBar" ] || [ "$quietBar" == "no" ]; then
@@ -615,7 +624,7 @@ dfamCheck()
 
 # Main #
 
-while getopts g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:w:h option
+while getopts b:g:s:o:t:f:i:r:c:l:m:d:n:a:e:q:v:w:h option
 do
 	case "${option}"
 		in
@@ -633,6 +642,7 @@ do
 		n) no_seq=${OPTARG};;
 		a) min_seq=${OPTARG};;
 		e) heli=${OPTARG};;
+		b) heliScore=${OPTARG};;
 		q) quietBar=${OPTARG};;
 		v) checksumResume=${OPTARG};;
 		w) workDir=${OPTARG};;
